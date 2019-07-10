@@ -7,6 +7,7 @@
     import * as serviceWorker from './serviceWorker';
     import store from './store';
     import firebase from 'firebase';
+    import 'firebase/functions';
     import { localLogout, logoutUser, saveUser } from './store/modules/auth/actions';
     import { Spin } from 'antd';
     import { firebaseConfig } from './firebase-config';

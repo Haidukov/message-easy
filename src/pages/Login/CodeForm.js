@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React  from 'react';
 import { Button, Form, Icon, Input, Typography } from 'antd';
 import { confirmCode } from '../../store/modules/auth/actions';
 import { connect } from 'react-redux';
@@ -22,7 +22,6 @@ const CodeForm = ({ form, confirmCode, authError, loading }) => {
             }
         });
     };
-    console.log(authError);
     return (
         <Form onSubmit={onSubmit}>
             <Typography.Title>Login</Typography.Title>
