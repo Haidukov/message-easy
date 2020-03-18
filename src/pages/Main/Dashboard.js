@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Icon, Layout, Menu, Divider, Modal } from 'antd';
+import { Icon, Layout, Menu, Divider, Modal, Typography } from 'antd';
 import styled from 'styled-components';
 import ProfileMenu from './ProfileMenu';
 import Sider from './Sider';
+import Router from './Router';
+import { connect } from 'react-redux';
+import { subscribeChats, unsubscribeChats } from '../../store/modules/chat/actions';
 
 const Header = styled(Layout.Header)`
     display: flex; 
@@ -19,21 +22,34 @@ const Content = styled(Layout.Content)`
     min-height: 280px;
 `;
 
-const Dashboard = () => {
+const mapStateToProps = state => ({
+    user: state.auth.currentUser
+});
+
+const mapDispatchToProps = dispatch => ({
+    subscribeChats: userId => dispatch(subscribeChats(userId)),
+    unsubscribeChats: () => dispatch(unsubscribeChats())
+});
+
+const Dashboard = ({ user, subscribeChats, unsubscribeChats }) => {
+    useEffect(() => {
+        subscribeChats(user.uid);
+        return unsubscribeChats;
+    }, []);
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider/>
             <Layout>
                 <Header>
-                    <div></div>
+                    <Typography.Title id='title' level={2}></Typography.Title>
                     <ProfileMenu/>
                 </Header>
                 <Content>
-                    Content
+                   <Router/>
                 </Content>
             </Layout>
         </Layout>
     );
-}
+};
 
-export default Dashboard;
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

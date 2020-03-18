@@ -3,6 +3,7 @@ import { Button, Form, Icon, Input, Typography } from 'antd';
 import firebase from 'firebase';
 import { sendVerificationCode, openCodeForm, } from '../../store/modules/auth/actions';
 import { connect } from 'react-redux';
+import { useSubmit } from '../../hooks/useSubmit';
 
 const mapStateToProps = state => ({
     authError: state.auth.error,
@@ -29,19 +30,11 @@ const PhoneForm = ({ form, loading, authError, sendVerificationCode }) => {
             setRecaptchaVerifier(appVerifier);
         });
     }, []);
-    const onSubmit = event => {
-        event.preventDefault();
-        form.validateFields((err, { phoneNumber }) => {
-            console.log(err);
-            if (!err) {
-                sendVerificationCode({ phoneNumber, appVerifier });
-            }
-        });
-    };
+    const onSubmit = useSubmit(form, form => sendVerificationCode({ ...form, appVerifier }));
     return (
         <>
             <Form onSubmit={onSubmit}>
-                <Typography.Title>Login</Typography.Title>
+                <Typography.Title>Авторизація</Typography.Title>
                 <Form.Item
                     { ...authError && {
                         help: authError,
@@ -53,12 +46,12 @@ const PhoneForm = ({ form, loading, authError, sendVerificationCode }) => {
                         <Input
                             size='large'
                             prefix={<Icon type='phone' style={{ color: 'rgba(0,0,0,.25)' }}/>}
-                            placeholder='Phone'
+                            placeholder='Номер телефону'
                         />
                     )}
                 </Form.Item>
                 <Button block type='primary' htmlType='submit' loading={loading}>
-                    Send
+                    Відправити
                 </Button>
             </Form>
             <div ref={recaptchaRef}></div>

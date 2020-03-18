@@ -1,25 +1,30 @@
 import { Form, Icon, Input, Modal, Typography } from 'antd';
 import { connect } from 'react-redux';
 import React from 'react';
-import { getUsersByPhoneNumber } from '../../services/users';
+import { addContactByPhoneNumber } from '../../store/modules/chat/actions';
+import { useSubmit } from '../../hooks/useSubmit';
 
-const AddContactForm = ({ form, visible, hideModal}) => {
+const mapStateToProps = state => ({
+    loading: state.chat.loading.form
+});
+
+const mapDispatchToProps = dispatch => ({
+   addContact: phoneNumber => dispatch(addContactByPhoneNumber(phoneNumber))
+});
+
+const AddContactForm = ({ form, visible, addContact, hideModal, loading }) => {
+    console.log(loading);
     const { getFieldDecorator } = form;
-    const onSubmit = event => {
-        event.preventDefault();
-        form.validateFields(async (err, { phone }) => {
-            if (!err) {
-                const user = await getUsersByPhoneNumber(phone);
-                console.log(user);
-                //hideModal();
-            }
-        });
-    };
+    const onSubmit = useSubmit(form,    async ({ phone }) => {
+        await addContact(phone);
+        hideModal();
+    });
     return (
         <Modal
             title='Add contact'
             visible={visible}
             onOk={onSubmit}
+            confirmLoading={loading}
             onCancel={hideModal}
         >
             <Form onSubmit={onSubmit}>
@@ -39,4 +44,4 @@ const AddContactForm = ({ form, visible, hideModal}) => {
     )
 };
 
-export default connect(() => ({}), () => ({}))(Form.create({ name: 'AddContactForm' })(AddContactForm));
+export default connect(mapStateToProps, mapDispatchToProps)(Form.create({ name: 'AddContactForm' })(AddContactForm));

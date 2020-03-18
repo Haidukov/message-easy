@@ -2,14 +2,17 @@ import thunk from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 import { routerMiddleware as createRouterMiddleware } from 'connected-react-router';
 
-const loggerMiddleware = createLogger({ collapsed: true });
-//const routerMiddleware = createRouterMiddleware(histr);
+const createMiddlewares = ({ history }) => {
+    const loggerMiddleware = createLogger({ collapsed: true });
 
-const middlewares = [thunk];
+    const middlewares = [thunk, createRouterMiddleware(history)];
 
-if (process.env.NODE_ENV !== 'production') {
-    middlewares.push(loggerMiddleware);
-}
+    if (process.env.NODE_ENV !== 'production') {
+        middlewares.push(loggerMiddleware);
+    }
 
-export default middlewares;
+    return middlewares;
+};
+
+export default createMiddlewares;
 

@@ -1,15 +1,28 @@
 import { createStore, applyMiddleware } from 'redux';
-import reducer from './modules';
+import { createBrowserHistory } from 'history';
+import createRootReducer from './modules';
 import enhance from './enhance';
-import middlewares from './middlewares';
+import createMiddlewares from './middlewares';
 
-const enhancers = enhance(applyMiddleware(...middlewares));
-const store = createStore(reducer, {}, enhancers);
+export const history = createBrowserHistory();
 
-if (module.hot) {
-    module.hot.accept('./modules', () => {
-        store.replaceReducer(reducer);
-    })
-}
+const configureStore = () => {
+    const rootReducer = createRootReducer(history);
 
-export default store;
+    const middlewares = createMiddlewares({ history });
+
+    const enhancers = enhance(applyMiddleware(...middlewares));
+    const store = createStore(
+        rootReducer,
+        {},
+        enhancers);
+
+    if (module.hot) {
+        module.hot.accept('./modules', () => {
+            store.replaceReducer(rootReducer);
+        })
+    }
+    return store;
+};
+
+export default configureStore;
