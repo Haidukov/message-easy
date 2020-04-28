@@ -18,3 +18,12 @@ body {
   min-height: 100vh;
   justify-content: center;
 }
+
+#title {
+  display: flex;
+  align-items: center;
+}
+
+.message-contact-modal .ant-modal-footer {
+  display: none;
+}

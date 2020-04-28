@@ -54,21 +54,54 @@ class ChatsService extends BaseRepository {
                 .collection('chats')
                 .doc(chatId)
                 .collection('messages')
-                .add({ ...message, timestamp: this.getTimestamp() });
+                .add({ ...message, timestamp: this.getTimestamp(), read: false });
         }
     }
 
-    subscribeToMessages(chatId, callback) {
+    subscribeToMessages(chatId, callback, userId) {
+        //const batch = this.db.batch();
         const query = this.db
             .collection('chats')
             .doc(chatId)
             .collection('messages')
             .orderBy('timestamp');
-        this._unsubscribeMessages = query.onSnapshot(snapshot => callback(snapshot.docs.map(doc => doc.data())));
+        this._unsubscribeMessages = query.onSnapshot(snapshot => {
+            const retme = callback(snapshot.docs.map((doc, i) => {
+                const ref = this.db
+                    .collection('chats')
+                    .doc(chatId)
+                    .collection('messages')
+                    .doc(doc.id);
+                const data = doc.data();
+                //batch.update(ref, { read: true })
+                if (!data.read && data.senderId !== userId) {
+                    console.log('hello');
+                    ref.update({ read: true });
+                }
+                return data;
+            }));
+            return retme;
+        });
     }
 
     unsubscribeFromMessagesList() {
         this._unsubscribeMessages && this._unsubscribeMessages();
+    }
+
+    async getUnreadMessagesCount(userId) {
+        let response = await this.db.collection('chats')
+                        .where('userIds', 'array-contains',userId).get();
+        const chatIds = response.docs.map(doc => doc.id);
+        const mapRequest = id => this.db
+                                    .collection('chats')
+                                    .doc(id)
+                                    .collection('messages')
+                                    .where('read', '==', false)
+                                    .get();
+
+        const requests = chatIds.map(mapRequest);
+        response = await Promise.all(requests);
+        return response.flatMap(query => query.docs.map(doc => doc.data()).filter(doc => doc.senderId !== userId)).length;
     }
 }
 

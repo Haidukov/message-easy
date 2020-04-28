@@ -6,16 +6,19 @@ import Chat from './Chat/Chat';
 import HistoryContext from '../../contexts/history-context';
 import NotSelectedChat from './NotSelectedChat';
 
-const Router = () => {
+const Router = ({ chatChanged, collapsed }) => {
     const history = useContext(HistoryContext);
     return (
-        <ConnectedRouter history={history}>
+   
             <Switch>
-                <Route path='/profile' component={Profile} />
-                <Route path='/chat/:chatId' component={Chat} />
+                <Route path='/profile' render={params => 
+                    <Profile {...params} collapsed={collapsed} chatChanged={chatChanged} />} />
+                <Route path='/chat/:chatId' render={params => 
+                    <Chat {...params} collapsed={collapsed} chatChanged={chatChanged}/>
+                } />
                 <Route path='/' component={NotSelectedChat}/>
             </Switch>
-        </ConnectedRouter>
+   
     );
 };
 

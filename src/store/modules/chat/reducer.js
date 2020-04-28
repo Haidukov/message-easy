@@ -4,9 +4,11 @@ const initialState = {
     list: [],
     byId: {},
     searchValue: '',
+    unreadMessagesCount: 0,
     loading: {
         list: true,
-        form: false
+        form: false,
+        unreadMessagesCount: false
     }
 };
 
@@ -78,6 +80,36 @@ export default (state = initialState, action) => {
                     form: false
                 }
             }
+        case ActionTypes.UPDATE_CHAT_ORDER:
+            return state;
+        case ActionTypes.FETCH_UNREAD_MESSAGES_COUNT_REQUEST:
+            return {
+                ...state,
+                loading: {
+                    ...state.loading,
+                    unreadMessagesCount: true
+                }
+            };
+        case ActionTypes.FETCH_UNREAD_MESSAGES_COUNT_SUCCESS:
+            return {
+                ...state,
+                unreadMessagesCount: action.payload,
+                loading: {
+                    ...state.loading,
+                    unreadMessagesCount: false
+                }
+            };   
+        case ActionTypes.FETCH_UNREAD_MESSAGES_COUNT_FAILED:
+        return {
+            ...state,
+            loading: {
+                ...state.loading,
+                unreadMessagesCount: false
+            }
+        }; 
+        default: {
+            return state;
+        }
     }
     return state;
 };

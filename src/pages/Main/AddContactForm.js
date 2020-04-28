@@ -1,6 +1,6 @@
 import { Form, Icon, Input, Modal, Typography } from 'antd';
 import { connect } from 'react-redux';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { addContactByPhoneNumber } from '../../store/modules/chat/actions';
 import { useSubmit } from '../../hooks/useSubmit';
 
@@ -13,12 +13,16 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const AddContactForm = ({ form, visible, addContact, hideModal, loading }) => {
-    console.log(loading);
     const { getFieldDecorator } = form;
     const onSubmit = useSubmit(form,    async ({ phone }) => {
         await addContact(phone);
         hideModal();
     });
+    useEffect(() => {
+        if (visible) {
+            form.resetFields();
+        }
+    }, [visible]);
     return (
         <Modal
             title='Add contact'

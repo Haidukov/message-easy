@@ -54,6 +54,24 @@ export const fetchMessagesFailed = chatId => ({
     payload: chatId
 });
 
+export const updateChatOrder = chatId => ({
+    type: ActionTypes.UPDATE_CHAT_ORDER,
+    payload: chatId
+});
+
+export const fetchUnreadMessagesCountRequest = () => ({
+    type: ActionTypes.FETCH_UNREAD_MESSAGES_COUNT_REQUEST
+});
+
+export const fetchUnreadMessagesCountSuccess = count => ({
+    type: ActionTypes.FETCH_UNREAD_MESSAGES_COUNT_SUCCESS,
+    payload: count
+});
+
+export const fetchUnreadMessagesCountFailed = () => ({
+    type: ActionTypes.FETCH_UNREAD_MESSAGES_COUNT_FAILED
+});
+
 export const subscribeChats = userId => async dispatch => {
     ChatService.subscribeToChatsList(userId, async chatIds => {
         dispatch(fetchChatsRequest());
@@ -65,7 +83,7 @@ export const subscribeChats = userId => async dispatch => {
 
             const chats = chatsDocs
                 .filter(chatDoc => chatDoc.exists)
-                .map(chatDoc => ({ ...chatDoc.data(), id: chatDoc.id}) );
+                .map(chatDoc => ({ ...chatDoc.data(), id: chatDoc.id }) );
 
 
             const usersPromises = chats
@@ -93,7 +111,8 @@ export const subscribeChats = userId => async dispatch => {
                 (user, index) => ({
                     ...user,
                     photoURL: imgs[index],
-                    chatId: chats.find(chat => chat.userIds.includes(user.id)).id
+                    chatId: chats.find(chat => chat.userIds.includes(user.id)).id,
+                    order: 0
                 }))));
         } catch (e) {
             Notifications.showError('Failed to fetch chats');
@@ -144,12 +163,13 @@ export const sendMessage = ({ chatId, messageText }) => async (dispatch, getStat
     await ChatService.sendMessage(chatId, message);
 };
 
-export const subscribeToMessages = chatId => dispatch => {
+export const subscribeToMessages = chatId => (dispatch, getState) => {
     dispatch(fetchMesssagesRequest(chatId));
     try {
+        const { auth: { currentUser } } = getState();
         ChatService.subscribeToMessages(chatId, messages => {
             dispatch(fetchMessagesSuccess({ chatId, messages }));
-        });
+        }, currentUser.uid);
     }
      catch (e) {
         Notifications.showError('Failed to load messages');
@@ -159,4 +179,15 @@ export const subscribeToMessages = chatId => dispatch => {
 
 export const unsubscribeFromMessages = () => {
     return () => ChatService.unsubscribeFromMessagesList();
+};
+
+export const getUnreadMessagesCount = () => async (dispatch, getState) => {
+    dispatch(fetchUnreadMessagesCountRequest());
+    try {
+        const { auth: { currentUser } } = getState();
+        const count = await ChatService.getUnreadMessagesCount(currentUser.uid);
+        dispatch(fetchUnreadMessagesCountSuccess(count));
+    } catch(e) {
+        dispatch(fetchUnreadMessagesCountFailed());
+    }
 };
